@@ -14,7 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agents: {
+        Row: {
+          brand_colors: string[]
+          brokerage: string
+          buyer_type: string
+          created_at: string
+          id: string
+          name: string
+          onboarded: boolean
+          plan: string
+          tone_tags: string[]
+          updated_at: string
+          visual_style: string
+        }
+        Insert: {
+          brand_colors?: string[]
+          brokerage?: string
+          buyer_type?: string
+          created_at?: string
+          id: string
+          name?: string
+          onboarded?: boolean
+          plan?: string
+          tone_tags?: string[]
+          updated_at?: string
+          visual_style?: string
+        }
+        Update: {
+          brand_colors?: string[]
+          brokerage?: string
+          buyer_type?: string
+          created_at?: string
+          id?: string
+          name?: string
+          onboarded?: boolean
+          plan?: string
+          tone_tags?: string[]
+          updated_at?: string
+          visual_style?: string
+        }
+        Relationships: []
+      }
+      listings: {
+        Row: {
+          agent_id: string
+          created_at: string
+          description: string | null
+          follow_up_email: string | null
+          id: string
+          image_url: string | null
+          property_details: Json
+          social_caption: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          description?: string | null
+          follow_up_email?: string | null
+          id?: string
+          image_url?: string | null
+          property_details?: Json
+          social_caption?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          description?: string | null
+          follow_up_email?: string | null
+          id?: string
+          image_url?: string | null
+          property_details?: Json
+          social_caption?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
