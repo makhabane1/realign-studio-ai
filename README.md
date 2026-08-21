@@ -1,8 +1,3 @@
-# Listing Genius
-
-Good choice — here's the updated prompt with the name swapped in:
-
-Prompt for Lovable:
 
 Build a web app called "Realign" — an AI-powered content studio for real estate agents that generates on-brand listing descriptions, social captions, matching images, and follow-up emails from a single property input.
 
