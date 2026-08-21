@@ -62,7 +62,10 @@ function PricingPage() {
   const setPlan = async (plan: string) => {
     const { data: auth } = await supabase.auth.getUser();
     const { error } = await supabase.from("agents").update({ plan }).eq("id", auth.user!.id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await queryClient.invalidateQueries({ queryKey: ["agent"] });
     toast.success(plan === "pro" ? "You're on Pro" : "Switched to Free");
   };

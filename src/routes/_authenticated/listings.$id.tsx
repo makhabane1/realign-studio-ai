@@ -76,7 +76,10 @@ function ListingDetailPage() {
 
   const setStatus = async (status: string) => {
     const { error } = await supabase.from("listings").update({ status }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await queryClient.invalidateQueries({ queryKey: ["listing", id] });
     await queryClient.invalidateQueries({ queryKey: ["listings"] });
   };
