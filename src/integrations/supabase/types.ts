@@ -64,6 +64,7 @@ export type Database = {
           follow_up_email: string | null
           id: string
           image_url: string | null
+          neighborhood_highlights: string | null
           property_details: Json
           social_caption: string | null
           status: string
@@ -77,6 +78,7 @@ export type Database = {
           follow_up_email?: string | null
           id?: string
           image_url?: string | null
+          neighborhood_highlights?: string | null
           property_details?: Json
           social_caption?: string | null
           status?: string
@@ -90,6 +92,7 @@ export type Database = {
           follow_up_email?: string | null
           id?: string
           image_url?: string | null
+          neighborhood_highlights?: string | null
           property_details?: Json
           social_caption?: string | null
           status?: string
