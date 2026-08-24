@@ -10,6 +10,14 @@ const detailsSchema = z.object({
   neighborhood: z.string().min(1),
   target_buyer: z.string().default(""),
   key_features: z.string().default(""),
+  neighborhood_highlights: z.string().optional(),
+  append_highlights: z.string().optional(),
+});
+
+const highlightsSchema = z.object({
+  neighborhood: z.string().min(1),
+  property_type: z.string().default(""),
+  target_buyer: z.string().default(""),
 });
 
 const FREE_LISTINGS = 5;
@@ -45,6 +53,8 @@ export const generateListing = createServerFn({ method: "POST" })
       }
     }
 
+    const { neighborhood_highlights, append_highlights, ...details } = data;
+
     const { generateListingContent } = await import("./ai.server");
     const content = await generateListingContent(
       {
@@ -55,7 +65,7 @@ export const generateListing = createServerFn({ method: "POST" })
         visual_style: agent.visual_style,
         brand_colors: agent.brand_colors,
       },
-      data,
+      details,
     );
 
     const { data: listing, error } = await supabase
@@ -63,10 +73,13 @@ export const generateListing = createServerFn({ method: "POST" })
       .insert({
         agent_id: userId,
         title: content.title,
-        property_details: data,
-        description: content.description,
+        property_details: details,
+        description: append_highlights
+          ? `${content.description}\n\n${append_highlights}`
+          : content.description,
         social_caption: content.social_caption,
         follow_up_email: content.follow_up_email,
+        neighborhood_highlights: neighborhood_highlights ?? null,
         status: "Draft",
       })
       .select("id")
@@ -74,6 +87,14 @@ export const generateListing = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     return { id: listing.id };
+  });
+
+export const generateHighlights = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => highlightsSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { generateNeighborhoodHighlights } = await import("./ai.server");
+    return generateNeighborhoodHighlights(data);
   });
 
 export const generateImage = createServerFn({ method: "POST" })
