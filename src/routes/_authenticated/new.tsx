@@ -127,6 +127,51 @@ function NewListingPage() {
             </div>
           </div>
 
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={buildHighlights}
+              disabled={highlightsLoading || !form.neighborhood.trim()}
+            >
+              <MapPin className="size-4" />
+              {highlightsLoading ? "Generating highlights…" : "Generate Neighborhood Highlights"}
+            </Button>
+
+            {highlights && (
+              <div className="rounded-xl border bg-muted/40 p-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-accent">
+                  Neighborhood highlights
+                </p>
+                <ul className="mt-3 space-y-2">
+                  {highlights.bullets.map((point) => (
+                    <li key={point} className="flex items-start gap-2 text-sm">
+                      <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-accent" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  type="button"
+                  variant={includeHighlights ? "secondary" : "default"}
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => setIncludeHighlights((prev) => !prev)}
+                >
+                  {includeHighlights ? <Check className="size-4" /> : <Plus className="size-4" />}
+                  {includeHighlights ? "Added to description" : "Add to description"}
+                </Button>
+                {includeHighlights && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    A highlights paragraph will be appended to the listing description when you
+                    generate.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="beds">Bedrooms</Label>
