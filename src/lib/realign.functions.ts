@@ -10,6 +10,14 @@ const detailsSchema = z.object({
   neighborhood: z.string().min(1),
   target_buyer: z.string().default(""),
   key_features: z.string().default(""),
+  neighborhood_highlights: z.string().optional(),
+  append_highlights: z.string().optional(),
+});
+
+const highlightsSchema = z.object({
+  neighborhood: z.string().min(1),
+  property_type: z.string().default(""),
+  target_buyer: z.string().default(""),
 });
 
 const FREE_LISTINGS = 5;
