@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
-import { generateListing } from "@/lib/realign.functions";
+import { Sparkles, MapPin, Check, Plus } from "lucide-react";
+import { generateListing, generateHighlights } from "@/lib/realign.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,13 @@ export const Route = createFileRoute("/_authenticated/new")({
 function NewListingPage() {
   const navigate = useNavigate();
   const generate = useServerFn(generateListing);
+  const genHighlights = useServerFn(generateHighlights);
   const [loading, setLoading] = useState(false);
+  const [highlightsLoading, setHighlightsLoading] = useState(false);
+  const [highlights, setHighlights] = useState<{ bullets: string[]; paragraph: string } | null>(
+    null,
+  );
+  const [includeHighlights, setIncludeHighlights] = useState(false);
   const [form, setForm] = useState({
     property_type: "",
     bedrooms: "",
@@ -41,11 +47,42 @@ function NewListingPage() {
   const set = (key: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
+  const buildHighlights = async () => {
+    if (!form.neighborhood.trim()) {
+      toast.error("Enter a neighborhood first");
+      return;
+    }
+    setHighlightsLoading(true);
+    try {
+      const result = await genHighlights({
+        data: {
+          neighborhood: form.neighborhood,
+          property_type: form.property_type,
+          target_buyer: form.target_buyer,
+        },
+      });
+      setHighlights(result);
+      setIncludeHighlights(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not generate highlights");
+    } finally {
+      setHighlightsLoading(false);
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const result = await generate({ data: form });
+      const result = await generate({
+        data: {
+          ...form,
+          neighborhood_highlights: highlights
+            ? highlights.bullets.map((b) => `• ${b}`).join("\n")
+            : undefined,
+          append_highlights: includeHighlights && highlights ? highlights.paragraph : undefined,
+        },
+      });
       toast.success("Listing content generated");
       navigate({ to: "/listings/$id", params: { id: result.id } });
     } catch (error) {
