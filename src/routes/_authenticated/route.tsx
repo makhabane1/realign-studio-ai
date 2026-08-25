@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LayoutGrid, Sparkles, Palette, Crown, LogOut } from "lucide-react";
+import { LayoutGrid, Sparkles, Newspaper, Palette, Crown, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/_authenticated")({
 const NAV = [
   { to: "/dashboard", label: "Listings", icon: LayoutGrid },
   { to: "/new", label: "New listing", icon: Sparkles },
+  { to: "/market", label: "Market update", icon: Newspaper },
   { to: "/brand", label: "Brand voice", icon: Palette },
   { to: "/pricing", label: "Plan", icon: Crown },
 ] as const;

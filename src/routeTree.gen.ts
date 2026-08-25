@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedBrandRouteImport } from './routes/_authenticated/brand'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
 import { Route as AuthenticatedPricingRouteImport } from './routes/_authenticated/pricing'
 import { Route as AuthenticatedListingsIdRouteImport } from './routes/_authenticated/listings.$id'
@@ -42,6 +43,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNewRoute = AuthenticatedNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/brand': typeof AuthenticatedBrandRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/market': typeof AuthenticatedMarketRoute
   '/new': typeof AuthenticatedNewRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/listings/$id': typeof AuthenticatedListingsIdRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/brand': typeof AuthenticatedBrandRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/market': typeof AuthenticatedMarketRoute
   '/new': typeof AuthenticatedNewRoute
   '/pricing': typeof AuthenticatedPricingRoute
   '/listings/$id': typeof AuthenticatedListingsIdRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/brand': typeof AuthenticatedBrandRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/market': typeof AuthenticatedMarketRoute
   '/_authenticated/new': typeof AuthenticatedNewRoute
   '/_authenticated/pricing': typeof AuthenticatedPricingRoute
   '/_authenticated/listings/$id': typeof AuthenticatedListingsIdRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/brand'
     | '/dashboard'
+    | '/market'
     | '/new'
     | '/pricing'
     | '/listings/$id'
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/brand'
     | '/dashboard'
+    | '/market'
     | '/new'
     | '/pricing'
     | '/listings/$id'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/brand'
     | '/_authenticated/dashboard'
+    | '/_authenticated/market'
     | '/_authenticated/new'
     | '/_authenticated/pricing'
     | '/_authenticated/listings/$id'
@@ -161,6 +173,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/market': {
+      id: '/_authenticated/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof AuthenticatedMarketRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/new': {
       id: '/_authenticated/new'
       path: '/new'
@@ -188,6 +207,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrandRoute: typeof AuthenticatedBrandRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedMarketRoute: typeof AuthenticatedMarketRoute
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
   AuthenticatedPricingRoute: typeof AuthenticatedPricingRoute
   AuthenticatedListingsIdRoute: typeof AuthenticatedListingsIdRoute
@@ -196,6 +216,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBrandRoute: AuthenticatedBrandRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedMarketRoute: AuthenticatedMarketRoute,
   AuthenticatedNewRoute: AuthenticatedNewRoute,
   AuthenticatedPricingRoute: AuthenticatedPricingRoute,
   AuthenticatedListingsIdRoute: AuthenticatedListingsIdRoute,
