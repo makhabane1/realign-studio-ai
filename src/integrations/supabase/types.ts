@@ -101,6 +101,36 @@ export type Database = {
         }
         Relationships: []
       }
+      market_updates: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          newsletter: string
+          period: string
+          stats: Json
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          newsletter?: string
+          period?: string
+          stats?: Json
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          newsletter?: string
+          period?: string
+          stats?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
