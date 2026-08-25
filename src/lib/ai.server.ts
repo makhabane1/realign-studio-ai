@@ -139,6 +139,66 @@ Target buyer: ${input.target_buyer || "general buyers"}`;
   return { bullets, paragraph: String(parsed["paragraph"] ?? bullets.join(" ")) };
 }
 
+export type MarketStats = {
+  period: string;
+  area: string;
+  median_price: string;
+  days_on_market: string;
+  inventory: string;
+  notes: string;
+};
+
+export async function generateMarketNewsletter(voice: VoiceProfile, stats: MarketStats) {
+  const system = `You are the in-house copywriter for ${voice.name || "a real estate agent"}${
+    voice.brokerage ? ` at ${voice.brokerage}` : ""
+  }. Write strictly in their brand voice.
+Tone attributes: ${voice.tone_tags.join(", ") || "professional, warm"}.
+Primary audience: ${voice.buyer_type || "local homeowners and buyers"}.
+Turn raw market statistics into a client-friendly monthly market update newsletter. Interpret what the numbers mean for readers in plain language — never just restate stats. Never invent statistics beyond what was provided; you may add general, clearly-framed context (e.g. seasonal patterns) but no fabricated figures.
+Return ONLY minified JSON with keys: subject, body.
+- subject: a short email subject line for the newsletter (max 10 words).
+- body: the newsletter body, 220-320 words, plain text with short paragraphs separated by blank lines. Structure: a warm opening line, what the numbers mean for buyers, what they mean for sellers, and a closing invitation to reply or call. No emojis, no markdown formatting, no bullet characters.`;
+
+  const user = `Period: ${stats.period}
+Area: ${stats.area}
+Median price: ${stats.median_price || "not provided"}
+Days on market: ${stats.days_on_market || "not provided"}
+Inventory: ${stats.inventory || "not provided"}
+Agent notes: ${stats.notes || "none"}`;
+
+  const res = await fetch(`${GATEWAY}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey() },
+    body: JSON.stringify({
+      model: "google/gemini-3.7-flash",
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!res.ok) throw gatewayError(res.status, await res.text());
+
+  const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+  const raw = json.choices?.[0]?.message?.content ?? "";
+  const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = JSON.parse(cleaned) as Record<string, unknown>;
+  } catch {
+    throw new Error("The AI returned an unexpected format. Please try generating again.");
+  }
+
+  const subject = String(parsed["subject"] ?? `${stats.period} market update`);
+  const body = String(parsed["body"] ?? "");
+  if (!body.trim()) throw new Error("No newsletter was generated. Please try again.");
+
+  return { subject, body };
+}
+
 const STYLE_HINTS: Record<string, string> = {
   Minimal: "airy minimalist composition, generous white space, thin type, muted palette",
   Bold: "high contrast blocks, oversized condensed type, confident graphic shapes",
