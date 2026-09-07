@@ -1,75 +1,77 @@
+# Realign
 
-Build a web app called "Realign" — an AI-powered content studio for real estate agents that generates on-brand listing descriptions, social captions, matching images, and follow-up emails from a single property input.
-
-Problem it solves: Real estate agents spend hours writing repetitive content for every new listing — descriptions, social posts, lead follow-ups — while trying to keep their personal brand voice consistent. Realign lets an agent input listing details once and generates all the content they need in their established voice.
-
-Design direction:
-
-Modern, premium real estate SaaS aesthetic — clean, trustworthy, professional (think Compass or Zillow Premier Agent, not generic AI purple gradients)
-
-Light mode primary, with warm neutral accent color (deep navy or terracotta)
-
-Property-card-style layout for listings dashboard
-
-Sidebar navigation, clean sans-serif typography
-
-Core features:
-
-Agent Brand Voice Setup (onboarding)
-
-Agent name, brokerage, tone attributes (e.g. luxury, friendly, direct), target buyer type
-
-Visual style preference (Minimal, Bold, Luxury, Warm) + 2 brand colors
-
-Save as a single Voice Profile per agent account
-
-New Listing Generator
-
-Input form: property type, bedrooms/bathrooms, key features (freeform text), price, neighborhood, target buyer
-
-Generates: full listing description, a short social caption (Instagram/Facebook), and a follow-up email template for interested leads — all in the agent's voice
-
-"Generate listing image" button — produces a styled social graphic for the listing using the property details + agent's visual style (call image API via Supabase Edge Function, not frontend)
-
-Loading skeleton while generating, not a spinner
-
-Listings Library
-
-Dashboard of all past listings with their generated content and image
-
-Search/filter by status (Active, Sold, Draft)
-
-Copy/export/download options for each content piece
-
-Data model (Supabase):
-
-agents (id, name, brokerage, tone_tags, buyer_type, visual_style, brand_colors)
-
-listings (id, agent_id, property_details jsonb, description, social_caption, follow_up_email, image_url, status, created_at)
-
-Auth: Email/password + Google sign-in
-
-Premium gating: Free tier = 5 listings/month with 3 images; Pro tier = unlimited listings and images ($29/mo)
-
-This project was built with [Lovable](https://lovable.dev).
+An AI-powered content studio for real estate agents. Realign turns one property input into on-brand listing descriptions, social captions, follow-up emails, branded listing graphics, neighborhood highlights, and monthly market newsletters.
 
 **Live app**: https://realign-studio-ai.lovable.app
 
-## Build with Lovable
+## What it does
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/abc3af12-23ec-49a5-bdd6-e6a06f840d84).
+Real estate agents spend hours writing repetitive content for every listing while trying to keep their personal brand voice consistent. Realign learns that voice once, then generates everything an agent needs from a single property form.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## Core features
 
-## Development
+### Agent Brand Voice Setup
+- Name, brokerage, tone attributes (e.g. luxury, friendly, direct), target buyer type
+- Visual style preference: Minimal, Bold, Luxury, or Warm
+- Two brand colors that feed into generated graphics
+- One Voice Profile per agent account
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+### New Listing Generator
+- Input: property type, bedrooms, bathrooms, price, neighborhood, target buyer, key features
+- Generates in the agent's voice:
+  - MLS-ready listing description
+  - Instagram/Facebook caption with hashtags
+  - Follow-up email template for interested leads
+  - Branded square listing graphic
+- Loading skeletons while content generates
+
+### Neighborhood Highlights
+- Generate 3–5 locally-relevant talking points from the neighborhood name and property context
+- Covers schools, parks, dining/shopping, walkability, and area character
+- Preview and append a natural-language paragraph directly into the listing description
+- Free-tier accessible
+
+### Listings Library
+- Dashboard of all past listings with generated content and images
+- Filter by status: Active, Sold, Draft
+- Copy and export each content piece
+
+### Market Update Newsletter
+- Input monthly stats: median price, days on market, inventory, area, period, agent notes
+- AI writes a 220–320 word client-friendly newsletter in the agent's brand voice
+- Saved history with copy/export support
+
+## Plan & premium gating
+
+- **Free**: 5 listings/month + 3 branded images/month
+- **Pro**: Unlimited listings and images ($29/mo)
+- Neighborhood highlights and market newsletters are included on both tiers
+
+## Tech stack
+
+- [TanStack Start](https://tanstack.com/start) — full-stack React framework
+- [Tailwind CSS v4](https://tailwindcss.com) — styling
+- [Lovable Cloud](https://lovable.dev) — backend, auth, and database
+- Google and email/password authentication
+- AI generation via Lovable AI Gateway (Gemini models)
+
+## Project structure
+
+- `src/routes/` — TanStack file-based routes
+- `src/lib/ai.server.ts` — AI prompts and generation helpers
+- `src/lib/realign.functions.ts` — listing, image, and highlight server functions
+- `src/lib/market.functions.ts` — market newsletter server functions
+- `src/components/realign/` — shared UI components like `CopyBlock`
+
+## Getting started locally
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
 npm i
 npm run dev
 ```
+
+The dev server runs at `http://localhost:8080`.
+
+---
+
+This project was built with [Lovable](https://lovable.dev).
