@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { LayoutGrid, Sparkles, Newspaper, Palette, Crown, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -53,7 +54,10 @@ function StudioLayout() {
           ))}
         </nav>
         <div className="border-t border-sidebar-border pt-4">
-          <p className="truncate px-3 text-xs text-sidebar-foreground/60">{user.email}</p>
+          <div className="flex items-center justify-between gap-2 pr-1">
+            <p className="truncate px-3 text-xs text-sidebar-foreground/60">{user.email}</p>
+            <ThemeToggle className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
+          </div>
           <Button
             variant="ghost"
             size="sm"
@@ -76,6 +80,7 @@ function StudioLayout() {
                 <item.icon className="size-4" />
               </Link>
             ))}
+            <ThemeToggle />
             <button onClick={signOut} className="rounded-md p-2 text-muted-foreground">
               <LogOut className="size-4" />
             </button>
