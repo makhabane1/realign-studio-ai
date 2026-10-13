@@ -57,7 +57,7 @@ function ListingDetailPage() {
     }
   };
   const saveField = async (field: "description" | "social_caption" | "follow_up_email", value: string) => {
-    const { error } = await supabase.from("listings").update({ [field]: value }).eq("id", id);
+    const { error } = await supabase.from("listings").update({ [field]: value } as { description: string }).eq("id", id);
     if (error) { toast.error(error.message); return false; }
     await queryClient.invalidateQueries({ queryKey: ["listing", id] });
     toast.success("Saved");
