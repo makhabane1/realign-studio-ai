@@ -1,2 +1,2 @@
-- [ ] Modernize landing page look
+- [x] Modernize landing page look
 - [ ] Pro payments (waiting on user)
