@@ -3,9 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ImageIcon } from "lucide-react";
+import { ArrowLeft, ImageIcon, Pencil, RefreshCw, Share2, Link2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { generateImage } from "@/lib/realign.functions";
+import { generateImage, regenerateListing } from "@/lib/realign.functions";
 import { CopyBlock } from "@/components/realign/CopyBlock";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,6 +41,34 @@ function ListingDetailPage() {
   const queryClient = useQueryClient();
   const makeImage = useServerFn(generateImage);
   const [imaging, setImaging] = useState(false);
+  const regen = useServerFn(regenerateListing);
+  const [regenerating, setRegenerating] = useState(false);
+  const runRegen = async () => {
+    if (!confirm("Regenerate the title, description, caption and email? Your edits will be replaced.")) return;
+    setRegenerating(true);
+    try {
+      await regen({ data: { listingId: id } });
+      await queryClient.invalidateQueries({ queryKey: ["listing", id] });
+      toast.success("Fresh copy generated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Regeneration failed");
+    } finally {
+      setRegenerating(false);
+    }
+  };
+  const saveField = async (field: "description" | "social_caption" | "follow_up_email", value: string) => {
+    const { error } = await supabase.from("listings").update({ [field]: value } as { description: string }).eq("id", id);
+    if (error) { toast.error(error.message); return false; }
+    await queryClient.invalidateQueries({ queryKey: ["listing", id] });
+    toast.success("Saved");
+    return true;
+  };
+  const togglePublic = async (is_public: boolean) => {
+    const { error } = await supabase.from("listings").update({ is_public }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    await queryClient.invalidateQueries({ queryKey: ["listing", id] });
+  };
+  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/share/${id}` : "";
 
   const { data: listing, isPending } = useQuery({
     queryKey: ["listing", id],
@@ -124,6 +154,11 @@ function ListingDetailPage() {
               .join(" · ")}
           </p>
         </div>
+        <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={runRegen} disabled={regenerating}>
+          <RefreshCw className={regenerating ? "size-4 animate-spin" : "size-4"} />
+          {regenerating ? "Regenerating…" : "Regenerate copy"}
+        </Button>
         <Select value={listing.status} onValueChange={setStatus}>
           <SelectTrigger className="w-36">
             <SelectValue />
@@ -136,7 +171,26 @@ function ListingDetailPage() {
             ))}
           </SelectContent>
         </Select>
+        </div>
       </header>
+
+      <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
+        <div className="flex items-center gap-3">
+          <Share2 className="size-4 text-muted-foreground" />
+          <div>
+            <p className="text-sm font-semibold">Public share link</p>
+            <p className="text-xs text-muted-foreground">Anyone with the link can view the description, photo and highlights.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {listing.is_public && (
+            <Button size="sm" variant="outline" onClick={async () => { await navigator.clipboard.writeText(shareUrl); toast.success("Link copied"); }}>
+              <Link2 className="size-4" /> Copy link
+            </Button>
+          )}
+          <Switch checked={listing.is_public} onCheckedChange={togglePublic} aria-label="Make listing public" />
+        </div>
+      </section>
 
       <section className="mt-8 rounded-xl border bg-card p-6 shadow-[var(--shadow-card)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -161,21 +215,37 @@ function ListingDetailPage() {
       </section>
 
       <div className="mt-6 space-y-4">
-        <CopyBlock
-          label="Listing description"
-          value={listing.description ?? ""}
-          filename="listing-description.txt"
-        />
-        <CopyBlock
-          label="Social caption"
-          value={listing.social_caption ?? ""}
-          filename="social-caption.txt"
-        />
-        <CopyBlock
-          label="Follow-up email"
-          value={listing.follow_up_email ?? ""}
-          filename="follow-up-email.txt"
-        />
+        <EditableBlock label="Listing description" value={listing.description ?? ""} filename="listing-description.txt" onSave={(v) => saveField("description", v)} />
+        <EditableBlock label="Social caption" value={listing.social_caption ?? ""} filename="social-caption.txt" onSave={(v) => saveField("social_caption", v)} />
+        <EditableBlock label="Follow-up email" value={listing.follow_up_email ?? ""} filename="follow-up-email.txt" onSave={(v) => saveField("follow_up_email", v)} />
+      </div>
+    </div>
+  );
+}
+
+function EditableBlock({ label, value, filename, onSave }: { label: string; value: string; filename: string; onSave: (v: string) => Promise<boolean> }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+  if (!editing) {
+    return (
+      <div className="relative">
+        <CopyBlock label={label} value={value} filename={filename} />
+        <Button size="sm" variant="ghost" className="absolute right-28 top-3" onClick={() => { setDraft(value); setEditing(true); }} aria-label={`Edit ${label}`}>
+          <Pencil className="size-4" /> Edit
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-xl border bg-card p-6">
+      <h2 className="text-sm font-semibold tracking-tight">{label}</h2>
+      <Textarea className="mt-3 min-h-48" value={draft} onChange={(e) => setDraft(e.target.value)} />
+      <div className="mt-3 flex justify-end gap-2">
+        <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>Cancel</Button>
+        <Button size="sm" disabled={saving} onClick={async () => { setSaving(true); if (await onSave(draft)) setEditing(false); setSaving(false); }}>
+          {saving ? "Saving…" : "Save"}
+        </Button>
       </div>
     </div>
   );

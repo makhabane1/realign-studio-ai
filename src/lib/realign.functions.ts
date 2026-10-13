@@ -159,3 +159,51 @@ export const generateImage = createServerFn({ method: "POST" })
 
     return { path };
   });
+
+export const regenerateListing = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ listingId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: agent } = await supabase.from("agents").select("*").eq("id", userId).maybeSingle();
+    if (!agent) throw new Error("Set up your brand voice first.");
+    const { data: listing, error } = await supabase
+      .from("listings").select("property_details").eq("id", data.listingId).maybeSingle();
+    if (error || !listing) throw new Error("Listing not found");
+    const { generateListingContent } = await import("./ai.server");
+    const content = await generateListingContent(
+      {
+        name: agent.name, brokerage: agent.brokerage, tone_tags: agent.tone_tags,
+        buyer_type: agent.buyer_type, visual_style: agent.visual_style, brand_colors: agent.brand_colors,
+      },
+      listing.property_details as never,
+    );
+    const { error: upErr } = await supabase.from("listings").update({
+      title: content.title, description: content.description,
+      social_caption: content.social_caption, follow_up_email: content.follow_up_email,
+    }).eq("id", data.listingId);
+    if (upErr) throw new Error(upErr.message);
+    return { ok: true };
+  });
+
+export const getSharedListing = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: l } = await supabaseAdmin
+      .from("listings")
+      .select("id, title, property_details, description, neighborhood_highlights, image_url, agent_id")
+      .eq("id", data.id).eq("is_public", true).maybeSingle();
+    if (!l) return null;
+    const { data: agent } = await supabaseAdmin.from("agents").select("name, brokerage").eq("id", l.agent_id).maybeSingle();
+    let imageUrl: string | null = null;
+    if (l.image_url) {
+      const { data: s } = await supabaseAdmin.storage.from("listing-images").createSignedUrl(l.image_url, 3600);
+      imageUrl = s?.signedUrl ?? null;
+    }
+    return {
+      title: l.title, details: l.property_details as Record<string, string>,
+      description: l.description, highlights: l.neighborhood_highlights, imageUrl,
+      agentName: agent?.name ?? "", brokerage: agent?.brokerage ?? "",
+    };
+  });
